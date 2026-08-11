@@ -61,7 +61,7 @@ Passwords stay in your local `.env` only. never commit that file. Grafana login 
 | Metrics | http://localhost:5001/metrics |
 | Health | http://localhost:5001/health |
 | MLflow | http://localhost:8080 |
-| Airflow | http://localhost:4242 |
+| Airflow | http://localhost:18080 |
 | Prometheus | http://localhost:9090 |
 | Alertmanager | http://localhost:9093 |
 | Grafana | http://localhost:3000 |
