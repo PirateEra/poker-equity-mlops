@@ -9,7 +9,7 @@ build:
 .PHONY: up
 up:
 	@test -f .env || (echo "Missing .env — copy .env.example to .env and set local passwords." && exit 1)
-	docker-compose -f infra/docker/docker-compose.yaml up -d
+	docker compose -f infra/docker/docker-compose.yaml up -d
 
 .PHONY: shell
 shell:
@@ -18,16 +18,16 @@ shell:
 .PHONY: reset
 reset:
 	@test -f .env || (echo "Missing .env — copy .env.example to .env and set local passwords." && exit 1)
-	docker-compose -f infra/docker/docker-compose.yaml down
+	docker compose -f infra/docker/docker-compose.yaml down
 	make build
 	make up
 
 .PHONY: refresh-app
 refresh-app:
 	@test -f .env || (echo "Missing .env — copy .env.example to .env and set local passwords." && exit 1)
-	docker-compose -f infra/docker/docker-compose.yaml build app
-	docker-compose -f infra/docker/docker-compose.yaml up -d app
+	docker compose -f infra/docker/docker-compose.yaml build app
+	docker compose -f infra/docker/docker-compose.yaml up -d app
 
 .PHONY: refresh-airflow
 refresh-airflow:
-	docker-compose -f infra/docker/docker-compose.yaml restart airflow
+	docker compose -f infra/docker/docker-compose.yaml restart airflow
