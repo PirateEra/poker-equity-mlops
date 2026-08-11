@@ -53,7 +53,7 @@ make build
 make up
 ```
 
-Passwords stay in your local `.env` only. never commit that file. Grafana login uses the `GF_SECURITY_ADMIN_*` values you set there.
+Passwords stay in your local `.env` only. Never commit that file. Grafana login uses the `GF_SECURITY_ADMIN_*` values you set there.
 
 | Service | URL |
 |---|---|
@@ -66,9 +66,20 @@ Passwords stay in your local `.env` only. never commit that file. Grafana login 
 | Alertmanager | http://localhost:9093 |
 | Grafana | http://localhost:3000 |
 
-1. Open Airflow and trigger `training_dag` (or `fast_training_dag`).
-2. After training finishes: `make refresh-app` so the API loads the latest MLflow model.
-3. Call `/predict` via http://localhost:5001/docs.
+3. **Bootstrap raw data into MySQL** (required once on a fresh database). The training DAG reads table `raw_data`; it does not download the dataset itself:
+
+```bash
+docker run --rm \
+  --network poker_equity_network \
+  --env-file .env \
+  -e MYSQL_HOST=mysql \
+  poker:latest \
+  python src/data_loading/data_downloading.py
+```
+
+4. Open Airflow (http://localhost:18080) and trigger **`poker_equity_training`** for a full run (preprocess, features, train, reload). Use **`fast_poker_equity_training`** only after preprocess has already succeeded once (it skips preprocess).
+5. After training finishes: `make refresh-app` so the API loads the latest MLflow model. On first boot the API may exit until a trained run exists in MLflow; that is expected.
+6. Call `/predict` via http://localhost:5001/docs.
 
 Example `/predict` body:
 
