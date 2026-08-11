@@ -9,7 +9,7 @@ flowchart LR
   subgraph serving [Serving]
     API[FastAPI]
   end
-  subgraph obs []
+  subgraph obs [Monitoring & Telemetry]
     Prom[Prometheus]
     AM[Alertmanager]
     PGW[Pushgateway]
