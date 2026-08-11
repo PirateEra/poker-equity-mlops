@@ -9,7 +9,7 @@ flowchart LR
   subgraph serving [Serving]
     API[FastAPI]
   end
-  subgraph obs [Observability]
+  subgraph obs []
     Prom[Prometheus]
     AM[Alertmanager]
     PGW[Pushgateway]
@@ -93,7 +93,7 @@ Useful Make targets: `make test`, `make build`, `make up`, `make refresh-app`, `
 
 Compose remains the full MLOps sandbox. Kubernetes here is a second deployment story for the FastAPI serving layer only (not Airflow, MySQL, or Grafana). See [`infra/k8s/README.md`](infra/k8s/README.md).
 
-## Project layout (high level)
+## Project layout
 
 ```
 src/                 # API, features, training, drift job
