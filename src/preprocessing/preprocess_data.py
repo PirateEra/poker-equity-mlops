@@ -11,7 +11,7 @@ def preprocess_poker_data(dataframe : DataFrame) -> DataFrame:
     This function, creates the equity (new label) column and drops the old label (class)
     """
     dataframe = dataframe.repartition(get_free_cores() * 4)
-    dataframe = dataframe.drop("CLASS") # Drop the old column for the class label since we changed the challenge
+    dataframe = dataframe.drop("CLASS") # Drop the old column for the class label
     dataframe = get_win_equity(dataframe)
     dataframe.persist() # Save to remove, added to see spark progress in terminal.
     spark = dataframe.sparkSession
