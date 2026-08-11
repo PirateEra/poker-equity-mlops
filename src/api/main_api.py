@@ -77,7 +77,7 @@ async def lifespan(app: FastAPI):
 
 app = FastAPI(title="Poker Equity API", lifespan=lifespan)
 
-# Mount /metrics without the Starlette trailing-slash redirect so Prometheus can scrape /metrics.
+# Mount /metrics, redirect so Prometheus can scrape /metrics.
 metrics_route = Mount("/metrics", make_asgi_app())
 metrics_route.path_regex = re.compile(r"^/metrics(?P<path>.*)$")
 app.routes.append(metrics_route)

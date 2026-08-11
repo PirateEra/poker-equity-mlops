@@ -9,7 +9,6 @@ route:
   repeat_interval: 1h
 
 receivers:
-  # Local demo: no external notification channel; firing alerts remain visible in the AlertManager UI.
   - name: default
 
 inhibit_rules: []

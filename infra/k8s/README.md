@@ -1,6 +1,6 @@
 # Kubernetes (API only)
 
-This is a separate way to run the FastAPI app. It is not a replacement for Docker Compose, and it is not Compose “running through” Kubernetes.
+This is a separate way to run the FastAPI app. It is not a replacement for Docker Compose.
 
 - Docker Compose = the full local stack (app, MLflow, Airflow, MySQL, Prometheus, AlertManager, Grafana). Use that for normal development and the full demo.
 - Kubernetes here = only the poker API (Deployment + Service). I added it mainly to show I can package the serving layer and deploy it with kubectl on a local cluster (kind / minikube).
@@ -97,9 +97,3 @@ Example /predict input:
   "C5": 10
 }
 ```
-
-## If something breaks
-
-- Image errors (`ErrImageNeverPull` / ImagePullBackOff): you forgot step 2, or the cluster does not see `poker:latest`.
-- Crash loops / model load fails: MLflow is not reachable from the pod, or there is no trained run yet. Fix the ConfigMap / start Compose mlflow / train first.
-- Pod stays not Ready for a long time: model + Spark startup is slow. Check logs; probes wait 30s before the first readiness check.

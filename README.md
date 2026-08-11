@@ -1,6 +1,6 @@
 # Poker Equity MLOps Pipeline
 
-End-to-end MLOps portfolio project: train a poker win-equity model with PySpark and Airflow, register it in MLflow, serve predictions with FastAPI, and monitor latency, errors, and data drift with Prometheus, Alertmanager, and Grafana. The domain is a poker equity regressor; the showcase is the productionization path — train → package → schedule → serve → observe.
+End-to-end MLOps portfolio project, to showcase MLOps capabilities. train a poker win-equity model with PySpark and Airflow, register it in MLflow, serve predictions with FastAPI, and monitor latency, errors, and data drift with Prometheus, Alertmanager, and Grafana. The domain is a poker equity regressor. the showcase is the productionization path, train → package → schedule → serve → observe.
 
 ## Architecture
 
@@ -53,7 +53,7 @@ make build
 make up
 ```
 
-Passwords stay in your local `.env` only — never commit that file. Grafana login uses the `GF_SECURITY_ADMIN_*` values you set there.
+Passwords stay in your local `.env` only. never commit that file. Grafana login uses the `GF_SECURITY_ADMIN_*` values you set there.
 
 | Service | URL |
 |---|---|
@@ -89,16 +89,6 @@ Example `/predict` body:
 
 Useful Make targets: `make test`, `make build`, `make up`, `make refresh-app`, `make reset`.
 
-## Interview demo checklist
-
-1. **Train** — trigger the Airflow training DAG; confirm a run appears in MLflow.
-2. **Serve** — `make refresh-app`, then hit `/docs` → `/predict`.
-3. **Observe traffic** — send a few predictions; within about a minute, charts should update in Grafana (provisioned poker equity dashboard).
-4. **Fire an alert** — either:
-   - spike errors / bad requests against the API, or
-   - regenerate drifted live telemetry (`python scripts/create_mock_telemetry_live_data.py`) and wait for the drift job + `HighDataDrift` rule; confirm in Alertmanager / Prometheus Alerts.
-5. **Optional K8s path** — build the image, load it into kind/minikube, `kubectl apply -f infra/k8s/`, port-forward the Service (details in [`infra/k8s/README.md`](infra/k8s/README.md)).
-
 ## Kubernetes (API only)
 
 Compose remains the full MLOps sandbox. Kubernetes here is a second deployment story for the FastAPI serving layer only (not Airflow, MySQL, or Grafana). See [`infra/k8s/README.md`](infra/k8s/README.md).
@@ -122,10 +112,4 @@ tests/               # Unit (+ integration) tests
 make test
 ```
 
-Hermetic unit tests cover features, PSI/drift helpers, and API `/health` + `/metrics` with model/Spark/MLflow mocked. A live Prometheus stack is not required for unit tests.
-
-## Future work
-
-- CI/CD (build, test, image publish) around this Compose + K8s layout
-- Stronger Alertmanager routing (PagerDuty / Slack) beyond the local demo sink
-- Expanding the K8s story beyond the API if needed for a production cutover
+The unit tests cover features, PSI/drift helpers, and API `/health` + `/metrics` with model/Spark/MLflow mocked. A live Prometheus stack is not required for unit tests.
