@@ -1,0 +1,11 @@
+[report]
+include = **/*.py
+show_missing = true
+omit = tests/*
+       configs/*
+       **/__init__.py
+       scripts/*
+       src/training/*
+       src/data_loading/*
+       src/preprocessing/*
+fail_under = 65

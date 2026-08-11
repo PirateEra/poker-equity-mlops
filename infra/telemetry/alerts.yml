@@ -1,0 +1,27 @@
+groups:
+  - name: HttpAlerts
+    rules:
+      - alert: ApiErrorSpike
+        expr: sum(rate(poker_equity_errors_total[1m])) > 0.1
+        for: 1m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Elevated API error rate for poker equity service"
+          description: "poker_equity_errors_total is {{ $value }} errors per second over the last minute."
+      - alert: HighDataDrift
+        expr: poker_equity_psi_s > 0.2
+        for: 1m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Data drift detected for {{ $labels.target }}"
+          description: "PSI for {{ $labels.target }} is {{ $value }}, exceeding the threshold of 0.2."
+      - alert: HighInferenceLatency
+        expr: histogram_quantile(0.95, sum by (le) (rate(poker_equity_model_inference_seconds_bucket[5m]))) > 2
+        for: 2m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High P95 model inference latency"
+          description: "P95 inference latency is {{ $value }} seconds, exceeding the 2s threshold."

@@ -1,0 +1,41 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.egg-info/
+.eggs/
+dist/
+build/
+.venv/
+venv/
+.env
+.env.*
+!.env.example
+
+# Test / coverage
+.pytest_cache/
+.coverage
+htmlcov/
+.coverage.*
+coverage.xml
+*.cover
+
+# Spark / PySpark intermediates (bulky, regenerable)
+data/intermediate/
+**/spark-warehouse/
+metastore_db/
+derby.log
+
+# MLflow local artifacts (if written outside Compose volume)
+mlruns/
+mlartifacts/
+
+# IDE / OS
+.idea/
+.vscode/
+*.swp
+.DS_Store
+*:Zone.Identifier
+
+# Docker / local overrides
+*.log

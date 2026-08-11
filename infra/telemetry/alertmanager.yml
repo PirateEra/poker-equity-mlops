@@ -1,0 +1,15 @@
+global:
+  resolve_timeout: 5m
+
+route:
+  receiver: default
+  group_by: [alertname]
+  group_wait: 10s
+  group_interval: 1m
+  repeat_interval: 1h
+
+receivers:
+  # Local demo: no external notification channel; firing alerts remain visible in the AlertManager UI.
+  - name: default
+
+inhibit_rules: []

@@ -1,0 +1,169 @@
+services:
+  app:
+    image: poker:latest
+    container_name: poker_app
+    build:
+      context: ../../
+      dockerfile: infra/docker/Dockerfile
+    command: uvicorn src.api.main_api:app --host 0.0.0.0 --port 5001
+    env_file:
+      - ../../.env
+    ports:
+      - "4040:4040" # Done to use spark UI
+      - "4041:4041" # Done to use spark 
+      - "5001:5001"
+    networks:
+      - poker_network
+    volumes:
+      - mlflow_data:/var/lib/mlflow
+    depends_on:
+      mlflow:
+        condition: service_healthy
+      mysql:
+        condition: service_healthy
+      prometheus:
+        condition: service_healthy
+      telemetry_job:
+        condition: service_started
+
+  mlflow:
+    image: ghcr.io/mlflow/mlflow:v3.3.0rc0
+    container_name: poker_mlflow
+    command: mlflow server --host 0.0.0.0 --port 8080
+    ports:
+      - "8080:8080"
+    volumes:
+      - mlflow_data:/var/lib/mlflow
+    networks:
+      - poker_network
+    healthcheck:
+      test: apt-get update -y && apt-get install -y curl && curl --fail http://localhost:8080 || exit 1
+      retries: 3
+      interval: 5s
+
+  prometheus:
+    image: prom/prometheus:v3.5.0
+    container_name: poker_prometheus
+    depends_on:
+      prometheus_push_gateway:
+        condition: service_healthy
+      alertmanager:
+        condition: service_started
+    volumes:
+      - ../telemetry/prometheus.yml:/etc/prometheus/prometheus.yml
+      - ../telemetry/alerts.yml:/etc/prometheus/alerts.yml
+    ports:
+      - "9090:9090"
+    networks:
+      - poker_network
+    healthcheck:
+      test: wget http://localhost:9090/metrics -S -O - || exit 1
+      retries: 3
+      interval: 5s
+
+  prometheus_push_gateway:
+    image: prom/pushgateway:v1.11.1
+    container_name: poker_pushgateway
+    ports:
+      - "9091:9091"
+    networks:
+      - poker_network
+    healthcheck:
+      test: wget http://localhost:9091/metrics -S -O - || exit 1
+      retries: 3
+      interval: 5s
+
+  alertmanager:
+    image: prom/alertmanager:v0.28.1
+    container_name: poker_alertmanager
+    volumes:
+      - ../telemetry/alertmanager.yml:/etc/alertmanager/alertmanager.yml
+    ports:
+      - "9093:9093"
+    networks:
+      - poker_network
+    command:
+      - --config.file=/etc/alertmanager/alertmanager.yml
+    healthcheck:
+      test: wget http://localhost:9093/-/healthy -S -O - || exit 1
+      retries: 3
+      interval: 5s
+
+  telemetry_job:
+    image: poker:latest
+    container_name: poker_telemetry_job
+    command: ["/bin/sh", "-c", "while true; do sleep 10; python src/main_drift_calculation.py ; done"]
+    volumes:
+      - ../../data:/poker/data
+    depends_on:
+      - prometheus
+    networks:
+      - poker_network
+
+  grafana:
+    image: grafana/grafana-enterprise
+    container_name: poker_grafana
+    ports:
+      - "3000:3000"
+    env_file:
+      - ../../.env
+    environment:
+      - GF_USERS_ALLOW_SIGN_UP=false
+      - GF_DASHBOARDS_DEFAULT_HOME_DASHBOARD_PATH=/etc/grafana/dashboards/poker_equity_dashboard.json
+    volumes:
+      - grafana_storage:/var/lib/grafana
+      - ../telemetry/grafana/provisioning:/etc/grafana/provisioning
+      - ../telemetry/grafana/dashboards:/etc/grafana/dashboards
+    depends_on:
+      - prometheus
+    networks:
+      - poker_network
+
+  airflow:
+    image: apache/airflow:3.1.0-python3.10
+    container_name: poker_airflow
+    command: airflow standalone
+    ports:
+      - "4242:8080"
+    env_file:
+      - ../../.env
+    environment:
+      - _AIRFLOW_DB_MIGRATE=true
+      - AIRFLOW__CORE__SIMPLE_AUTH_MANAGER_ALL_ADMINS=true  # note: Disabling authentication completely.
+    user: root
+    networks:
+      - poker_network
+    volumes:
+      - ../airflow/dags/:/opt/airflow/dags  # where Airflow is getting the DAGs from.
+      - /var/run/docker.sock:/var/run/docker.sock  # linking local docker to Airflow
+    healthcheck:
+      test: wget http://localhost:8080/api/v2/monitor/health -o /dev/null || exit 1  # note: wget downloads the file. I do not need it. So we move it to /dev/null
+      retries: 3
+      interval: 5s
+
+  mysql:
+    image: mysql:8.0
+    container_name: poker_mysql
+    env_file:
+      - ../../.env
+    networks:
+      - poker_network
+    ports:
+      - "3306:3306"
+    healthcheck:
+      test: mysqladmin ping -h 127.0.0.1 -u $$MYSQL_USER --password=$$MYSQL_PASSWORD
+      retries: 3
+      interval: 5s
+      start_period: 30s
+    volumes:
+      - mysql_data:/var/lib/mysql
+
+volumes:
+  mysql_data:
+  mlflow_data:
+  grafana_storage:
+
+networks:
+  poker_network:
+    name: poker_equity_network
+    driver: bridge

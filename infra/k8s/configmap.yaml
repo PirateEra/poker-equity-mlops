@@ -1,0 +1,10 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: poker-api-config
+  labels:
+    app: poker-api
+data:
+  # Point at MLflow reachable from the cluster (Compose on the host by default).
+  # Override for your setup — see README.md.
+  MLFLOW_TRACKING_URI: "http://host.docker.internal:8080"
