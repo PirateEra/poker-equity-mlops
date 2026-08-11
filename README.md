@@ -124,3 +124,15 @@ make test
 ```
 
 The unit tests cover features, PSI/drift helpers, and API `/health` + `/metrics` with model/Spark/MLflow mocked. A live Prometheus stack is not required for unit tests.
+
+Feature unit tests need **Java 17** (PySpark). On a host with an older JDK, Spark fails at session setup. Point `JAVA_HOME` at JDK 17, or run the same coverage command inside the image (it already ships JDK 17):
+
+```bash
+docker run --rm \
+  -v "$(pwd):/poker" \
+  -w /poker \
+  poker:latest \
+  bash -c 'coverage run -m pytest -v -p no:warnings tests/unit && coverage report --rcfile=.coveragerc'
+```
+
+Push and PR to `main` run GitHub Actions CI: unit tests (Python 3.13 + JDK 17) and a Docker image build. No deploy step.
